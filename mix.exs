@@ -31,6 +31,9 @@ defmodule ReactiveObserver.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      { :sockjs, github: "MLaszczewski/sockjs-erlang" },
+      { :jsx,  "~> 2.6.2" }
+    ]
   end
 end
