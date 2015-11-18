@@ -54,7 +54,7 @@ defmodule ReactiveObserver.SockJsHandler do
     cond do
       byte_size(session_id)>100 -> {:error, "too long sessionId"}
       byte_size(session_id)<10 -> {:error, "too short sessionId"}
-      true -> {:ok, %State{state | session: [Reactive.Session,session_id]}}
+      true -> {:ok, %State{state | session_id: session_id}}
     end
     ## TODO: check for too much sessions/connections from one IP!
   end
@@ -88,7 +88,7 @@ defmodule ReactiveObserver.SockJsHandler do
 
   def contexts(_req,state) do
     %{
-      session: state.session,
+      session_id: state.session_id,
       socket: self()
     }
   end
