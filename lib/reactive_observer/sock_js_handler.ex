@@ -2,7 +2,7 @@ defmodule ReactiveObserver.SockJsHandler do
   require Logger
 
   defmodule State do
-    defstruct session: :false, api: :false
+    defstruct session_id: :false, api: :false
   end
 
   def handle(_conn, :init, state) do
@@ -50,7 +50,7 @@ defmodule ReactiveObserver.SockJsHandler do
   def message(%{type: "timeSync", server_recv_ts: recv_ts, client_send_ts: send_ts }, req, state) do
     {:reply, %{type: "timeSync", server_recv_ts: recv_ts, client_send_ts: send_ts, server_send_ts: recv_ts }, state}
   end
-  def message(%{type: "initializeSession", sessionId: session_id},req,state=%State{ session: false}) do
+  def message(%{type: "initializeSession", sessionId: session_id},req,state=%State{ session_id: false}) do
     cond do
       byte_size(session_id)>100 -> {:error, "too long sessionId"}
       byte_size(session_id)<10 -> {:error, "too short sessionId"}
@@ -58,7 +58,7 @@ defmodule ReactiveObserver.SockJsHandler do
     end
     ## TODO: check for too much sessions/connections from one IP!
   end
-  def message(_,_req,_state=%State{ session: false}) do
+  def message(_,_req,_state=%State{ session_id: false}) do
     {:error, :not_authenticated}
   end
   def message(%{ type: "request", to: to, method: method, args: args, requestId: request_id }, req, state) do
