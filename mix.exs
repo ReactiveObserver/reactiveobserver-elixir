@@ -3,7 +3,7 @@ defmodule ReactiveObserver.Mixfile do
 
   def project do
     [app: :reactive_observer,
-     version: "0.0.1",
+     version: "0.1.0",
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
      elixir: "~> 1.0.0",
