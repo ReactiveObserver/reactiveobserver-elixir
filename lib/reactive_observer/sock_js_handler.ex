@@ -2,24 +2,30 @@ defmodule ReactiveObserver.SockJsHandler do
   require Logger
 
   defmodule State do
-    defstruct session_id: :false, api: :false
+
+  defstruct session_id: :false, api: :false, encoder: &:jsx.encode/1,
+    decoder: &Reactive.Observer.SockJsHandler.default_decoder/1
+  end
+
+  def default_decoder(d) do
+    :jsx.decode(d,[labels: :existing_atom])
   end
 
   def handle(_conn, :init, state) do
     #Logger.debug("SockJS init in state #{inspect state} PID=#{inspect self()}")
-    {:new_connection, api} = state
+    {:new_connection, api, opts} = state
     api.load_api()
-    {:ok, %State{ api: api }}
+    {:ok, Map.merge( %State{ api: api } ,Enum.into(opts, %{}))}
   end
   def handle(conn, {:recv, data}, state) do
     #Logger.debug("SockJS data #{data} in state #{inspect state}")
-    message=:jsx.decode(data,[labels: :existing_atom])
+    message=state.decoder.(data)
     {megasecs,secs,microsecs} =  :os.timestamp()
     ts = megasecs*1_000_000_000+secs*1_000+div(microsecs,1_000)
     tmessage=Map.put(message,:server_recv_ts,ts)
     case message(tmessage,conn,state) do
       {:reply, reply, rState} ->
-        encoded = :jsx.encode(reply)
+        encoded = state.encoder.(reply)
      #   Logger.debug("SockJS reply #{encoded} in state #{inspect rState}")
         :sockjs.send(encoded, conn)
         {:ok, rState}
@@ -31,7 +37,7 @@ defmodule ReactiveObserver.SockJsHandler do
    # Logger.debug("SockJS info #{inspect info} in state #{inspect state}")
     case info(info,conn,state) do
       {:reply, reply, rState} ->
-        encoded = :jsx.encode(reply)
+        encoded = state.encoder.(reply)
    #     Logger.debug("SockJS send #{encoded} in state #{inspect rState}")
         :sockjs.send(encoded, conn)
         {:ok, rState}
