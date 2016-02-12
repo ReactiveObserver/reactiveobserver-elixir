@@ -4,7 +4,7 @@ defmodule ReactiveObserver.SockJsHandler do
   defmodule State do
 
   defstruct session_id: :false, api: :false, encoder: &:jsx.encode/1,
-    decoder: &Reactive.Observer.SockJsHandler.default_decoder/1
+    decoder: &ReactiveObserver.SockJsHandler.default_decoder/1
   end
 
   def default_decoder(d) do
